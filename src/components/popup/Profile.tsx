@@ -26,7 +26,7 @@ const Profile: React.FC<any> = ({ profile }) => {
       // toast.success("Data posted successfully!");
       profile.jobPosted = true;
     } catch (error) {
-      console.error("Error posting data:", error);
+      // console.error("Error posting data:", error);
       // toast.error("Failed to post data. Please try again.");
       // Handle the error as needed
       profile.jobPosted = false; // Set to false on error if necessary

@@ -7,34 +7,18 @@ import { useRef } from "react";
 
 import { colors, generateRandomNumber } from "./Skills";
 
-const UserProfile = ({ visibleProfile, companyProfile }: any) => {
-  console.log("companyProfile", companyProfile);
-  // };
+const UserProfile = ({ visibleProfile, companyProfile, setShowEmailForm }) => {
+  // console.log("companyProfile", companyProfile);
   return (
     <>
-      {Object.keys(companyProfile).length === 0 ? (
-        <p>You have not been assigned to any company yet.</p>
-      ) : (
-        <button
-          onClick={() => {
-            /* your logic here */
-          }}
-        >
-          View Company Profile
-        </button>
-      )}
       <div style={{ paddingBottom: "35px" }}>
         {visibleProfile.origin === "twitter" && (
-          <h2 className="center user-heading">
-            {/* <TwitterIcon className="user-heading__icon" /> */}
-            {visibleProfile.origin}
-          </h2>
+          <h2 className="center user-heading">{visibleProfile.origin}</h2>
         )}
         <div className="center gap-5">
-          <div className="user-details-left  flex-1">
+          <div className="user-details-left flex-1">
             {visibleProfile.origin === "linkedin" && (
               <h2 className="flex items-center user-heading">
-                {/* <LinkedInIcon className="user-heading__icon" /> */}
                 {visibleProfile.origin}
               </h2>
             )}
@@ -82,20 +66,20 @@ const UserProfile = ({ visibleProfile, companyProfile }: any) => {
                 </div>
               )}
             </div>
-            {visibleProfile.tags && (
-              <ul className="skills">
-                {visibleProfile.tags.map((el, i: number) => (
-                  <li
-                    key={i}
-                    style={{
-                      backgroundColor: `${colors[generateRandomNumber()]}`,
-                    }}
-                  >
-                    {el.value}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div style={{ marginTop: "10px" }}>
+              {Object.keys(companyProfile).length === 0 ? (
+                <p style={{ color: "red" }}>
+                  You have not been assigned to any company yet.
+                </p>
+              ) : (
+                <button
+                  className="send-email-button"
+                  onClick={() => setShowEmailForm(true)}
+                >
+                  Send Email to Lead
+                </button>
+              )}
+            </div>
           </div>
 
           <div

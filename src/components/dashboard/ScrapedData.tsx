@@ -1,13 +1,16 @@
-import * as React from "react";
+import React from "react";
 import { StoredData } from "../../interfaces/UserProfile";
 import UserProfile from "./UserProfile";
 import { ActionsBtn } from "../utils/Svgs";
 import { truncateString } from "../utils/Common";
+// import EmailForm from "./EmailForm"; // Import the EmailForm component
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { API } from "../../config/apiConfig";
 import ApiUrls from "../../config/ApiUrls";
+import EmailForm from "./candidate/EmailForm";
+import Loader from "../utils/Loader";
 
 const ScrapedData = ({ open }) => {
   const [allProfiles, setAllProfiles] = React.useState([]);
@@ -15,6 +18,7 @@ const ScrapedData = ({ open }) => {
   const [indexOfClickProfile, setIndexOfClickProfile] = React.useState(-1);
   const [loading, setLoading] = React.useState(false);
   const [companyProfile, setCompanyProfile] = React.useState(null);
+  const [showEmailForm, setShowEmailForm] = React.useState(false);
 
   React.useEffect(() => {
     const fetchProfiles = async () => {
@@ -54,6 +58,12 @@ const ScrapedData = ({ open }) => {
 
   const visibleProfile = allProfiles && allProfiles[indexOfClickProfile];
 
+  // const handleEmailSubmit = (emailData) => {
+  //   // Logic to send email
+  //   console.log(emailData);
+  //   setShowEmailForm(false); // Reset the form visibility
+  // };
+
   // Delete a specific profile
   const deleteProfile = (profileIndex) => {
     const updatedProfiles = [...(allProfiles || [])];
@@ -67,6 +77,7 @@ const ScrapedData = ({ open }) => {
   // Update handleModalClose to call refreshProfiles
   const handleModalClose = () => {
     setOpenUserModal(false);
+    setShowEmailForm(false);
   };
 
   return (
@@ -76,7 +87,7 @@ const ScrapedData = ({ open }) => {
           <h1>Scraped Profiles</h1>
         </header>
         {loading ? (
-          <p style={{ textAlign: "center" }}>Loading...</p>
+          <Loader color="#ff6347" size={50} />
         ) : (
           <table className="scraped-table">
             <thead>
@@ -130,32 +141,46 @@ const ScrapedData = ({ open }) => {
               <span className="close" onClick={handleModalClose}>
                 &times;
               </span>
-              {visibleProfile && (
-                <>
-                  <UserProfile
-                    visibleProfile={visibleProfile.features}
-                    companyProfile={companyProfile}
-                  />
-                </>
+              {showEmailForm ? (
+                <EmailForm
+                  // onSubmit={handleEmailSubmit}
+                  leadProfile={visibleProfile}
+                  setShowEmailForm={setShowEmailForm}
+                />
+              ) : (
+                visibleProfile && (
+                  <>
+                    <UserProfile
+                      visibleProfile={visibleProfile.features}
+                      companyProfile={companyProfile}
+                      setShowEmailForm={setShowEmailForm} // Pass the state setter to UserProfile
+                    />
+                  </>
+                )
               )}
 
-              <div className="button-container">
-                <button
-                  className="button button-cancel"
-                  onClick={() => setOpenUserModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="button button-delete"
-                  onClick={() => {
-                    setOpenUserModal(false);
-                    deleteProfile(indexOfClickProfile);
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
+              {/* {!showEmailForm && (
+                <div className="button-container">
+                  <button
+                    className="button button-cancel"
+                    onClick={() => {
+                      setShowEmailForm(false);
+                      setOpenUserModal(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="button button-delete"
+                    onClick={() => {
+                      setOpenUserModal(false);
+                      deleteProfile(indexOfClickProfile);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )} */}
             </div>
           </div>
         )}
