@@ -20,33 +20,33 @@ const Popup: React.FC = () => {
   const [showSignIn, setShowSignIn] = useState(true);
   const [localStorageData, setLocalStorageData] = useState<string | null>(null);
 
-  const sendEmail = async (profile, email) => {
-    try {
-      // Convert profile object to a JSON string
-      const profileString = JSON.stringify(profile);
-      const url =
-        "https://yrqubf5qoh.execute-api.us-east-1.amazonaws.com/Prod/send-email";
+  // const sendEmail = async (profile, email) => {
+  //   try {
+  //     // Convert profile object to a JSON string
+  //     const profileString = JSON.stringify(profile);
+  //     const url =
+  //       "https://yrqubf5qoh.execute-api.us-east-1.amazonaws.com/Prod/send-email";
 
-      console.log(profileString, "popup 25");
-      const payload = {
-        to: email,
-        subject: `scrap ${profile.personalInfo.profileName}'s profile`,
-        body: profileString,
-      };
-      console.log(url, payload);
+  //     console.log(profileString, "popup 25");
+  //     const payload = {
+  //       to: email,
+  //       subject: `scrap ${profile.personalInfo.profileName}'s profile`,
+  //       body: profileString,
+  //     };
+  //     console.log(url, payload);
 
-      const response = await axios.post(url, payload);
+  //     const response = await axios.post(url, payload);
 
-      if (response.status === 200) {
-        setResponse(response.data);
-        console.log(response.data, "response");
-      } else {
-        console.log("Unexpected response status:", response.status);
-      }
-    } catch (error) {
-      console.log("Error sending email:", error);
-    }
-  };
+  //     if (response.status === 200) {
+  //       setResponse(response.data);
+  //       console.log(response.data, "response");
+  //     } else {
+  //       console.log("Unexpected response status:", response.status);
+  //     }
+  //   } catch (error) {
+  //     console.log("Error sending email:", error);
+  //   }
+  // };
 
   const getLocalStorageData = async () => {
     const [tab] = await chrome.tabs.query({
@@ -124,11 +124,11 @@ const Popup: React.FC = () => {
 
         setProfile(message.profile);
 
-        chrome.storage.local.get(["email"]).then((result) => {
-          if (result.email) {
-            sendEmail(message.profile, result.email);
-          }
-        });
+        // chrome.storage.local.get(["email"]).then((result) => {
+        //   if (result.email) {
+        //     sendEmail(message.profile, result.email);
+        //   }
+        // });
       }
     });
   }, []);
@@ -259,19 +259,8 @@ const Popup: React.FC = () => {
 
 export default Popup;
 
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <Popup />
-//   </React.StrictMode>,
-//   document.getElementById("root")
-// );
-
 // Update to use createRoot
 const container = document.getElementById("root");
 const root = createRoot(container);
 
-root.render(
-  <React.StrictMode>
-    <Popup />
-  </React.StrictMode>
-);
+root.render(<Popup />);

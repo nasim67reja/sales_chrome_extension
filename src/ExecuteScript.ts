@@ -33,7 +33,7 @@ export const userBasicInfo = () => {
       .textContent || "";
 
   const profileInfo = {
-    userName: linkedinName || upworkName || twitterName || companyName || null,
+    userName: companyName || linkedinName || upworkName || twitterName || null,
     profileUrl: window.location.href.split("?")[0],
     isExist: false,
   };

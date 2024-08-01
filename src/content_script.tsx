@@ -292,6 +292,26 @@ const extractUpworkPersonalInfo = () => {
   return personalInfo;
 };
 
+const extractLinkedinCompanyAboutInfo = () => {
+  // Look for a section that might contain the overview information
+  const aboutSection =
+    document.querySelector(
+      ".org-page-details-module__card-spacing .org-about-module__margin-bottom"
+    ) ||
+    document.querySelector(
+      ".artdeco-card .org-page-details-module__card-spacing"
+    ) ||
+    document.querySelector(".org-page-details-module__card-spacing");
+
+  const aboutParagraph =
+    aboutSection?.querySelector("p.break-words") ||
+    aboutSection?.querySelector("p.text-body-medium") ||
+    aboutSection?.querySelector("p");
+
+  const about = aboutParagraph ? aboutParagraph.textContent.trim() : null;
+
+  return about;
+};
 // Function to extract company information
 const extractLinkedinCompanyInfo = () => {
   let profileName = null;
@@ -320,18 +340,6 @@ const extractLinkedinCompanyInfo = () => {
   ) as HTMLImageElement | null;
   const profileImageSrc = profileImageElement?.src || "default-image-url";
 
-  // Extracting about information
-  const aboutElement = document.querySelector(
-    ".organization-about-module__content-consistant-cards-description"
-  );
-  const about = aboutElement
-    ? Array.from(aboutElement.querySelectorAll(".lt-line-clamp__line"))
-        .map((item) => item.textContent.trim())
-        .join(" ")
-    : null;
-
-  //  const title = titleElement ? titleElement.textContent.trim() : "";
-
   // Extracting summary information
   const summaryElements = document.querySelectorAll(
     ".org-top-card-summary-info-list__info-item"
@@ -339,6 +347,8 @@ const extractLinkedinCompanyInfo = () => {
   const summary = Array.from(summaryElements)
     .map((item) => item.textContent.trim())
     .join(", ");
+
+  const about = extractLinkedinCompanyAboutInfo();
 
   const personalInfo = {
     profileName,
@@ -365,6 +375,32 @@ const extractProfileInfo = (origin: string) => {
     if (window.location.href.includes("/company/")) {
       personalInfo = extractLinkedinCompanyInfo();
       company = true;
+
+      // Check if the about information is missing
+      if (!personalInfo.about) {
+        const proceed = confirm(
+          "About information is not scraped. Would you like to navigate to the About section and scrape it?"
+        );
+
+        if (proceed) {
+          // Navigate to the about page
+          window.location.href = `${window.location.href.replace(
+            "/mycompany/",
+            "/about/"
+          )}`;
+
+          // Wait for the page to load
+          setTimeout(() => {
+            personalInfo.about = extractLinkedinCompanyAboutInfo();
+            sendProfileToBackground(personalInfo, company);
+            console.log("hit here");
+          }, 6000); // Adjust timeout as needed for the page to load
+        } else {
+          sendProfileToBackground(personalInfo, company);
+        }
+      } else {
+        sendProfileToBackground(personalInfo, company);
+      }
     } else {
       personalInfo = extractLinkedinPersonalInfo();
       workExperience = extractLinkedinWorkExperience();
@@ -381,20 +417,36 @@ const extractProfileInfo = (origin: string) => {
 
   personalInfo.ProfileLink = window.location.href.split("?")[0];
 
+  if (!company) {
+    const profile = {
+      origin,
+      company,
+      personalInfo,
+      workExperience,
+      educationDetails,
+      licenseCertification,
+      skills,
+      // tags,
+    };
+
+    sendProfileToBackground(profile, company);
+  }
+};
+
+const sendProfileToBackground = (personalInfo, company) => {
   const profile = {
-    origin,
+    origin: "linkedin",
     company,
     personalInfo,
-    workExperience,
-    educationDetails,
-    licenseCertification,
-    skills,
-    // tags,
+    workExperience: [],
+    educationDetails: [],
+    licenseCertification: [],
+    skills: [],
   };
 
   console.log(profile, "profile");
 
-  // send the scrap data to the background
+  // send the scraped data to the background
   chrome.runtime.sendMessage(
     {
       type: "INFO",
@@ -404,6 +456,59 @@ const extractProfileInfo = (origin: string) => {
   );
 };
 
+// const extractProfileInfo = (origin: string) => {
+//   let personalInfo: any = "",
+//     workExperience: any = "",
+//     educationDetails: any = "",
+//     licenseCertification: any = "",
+//     skills: any = "",
+//     // tags: any = "";
+//     company: any = false;
+
+//   if (origin === "linkedin") {
+//     // Check if it's a company profile
+//     if (window.location.href.includes("/company/")) {
+//       personalInfo = extractLinkedinCompanyInfo();
+//       company = true;
+//     } else {
+//       personalInfo = extractLinkedinPersonalInfo();
+//       workExperience = extractLinkedinWorkExperience();
+//       educationDetails = extractLinkedinEducationDetails();
+//       licenseCertification = extractLinkedinLicenseCertification();
+//       skills = extractLinkedinSkills();
+//     }
+//   } else if (origin === "twitter") {
+//     personalInfo = extractTwitter();
+//   } else if (origin === "upwork") {
+//     personalInfo = extractUpworkPersonalInfo();
+//     skills = extractUpworkSkills();
+//   }
+
+//   personalInfo.ProfileLink = window.location.href.split("?")[0];
+
+//   const profile = {
+//     origin,
+//     company,
+//     personalInfo,
+//     workExperience,
+//     educationDetails,
+//     licenseCertification,
+//     skills,
+//     // tags,
+//   };
+
+//   console.log(profile, "profile");
+
+//   // send the scrap data to the background
+//   chrome.runtime.sendMessage(
+//     {
+//       type: "INFO",
+//       profile,
+//     },
+//     (response) => {}
+//   );
+// };
+
 // reading the message from background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const origin = message.origin;
@@ -412,27 +517,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     extractProfileInfo(origin);
   }
 });
-// reading the message from background
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//   const origin = message.origin;
-//   console.log("message", message);
-//   // if it is startScraping, then the scrap will start
-//   if (message.action === "startScraping") {
-//     if (origin === "linkedin" && window.location.href.includes("/company/")) {
-//       // Wait for the about page to load
-//       const observer = new MutationObserver(() => {
-//         if (document.readyState === "complete") {
-//           observer.disconnect();
-//           extractProfileInfo(origin);
-//         }
-//       });
-
-//       observer.observe(document, {
-//         childList: true,
-//         subtree: true,
-//       });
-//     } else {
-//       extractProfileInfo(origin);
-//     }
-//   }
-// });

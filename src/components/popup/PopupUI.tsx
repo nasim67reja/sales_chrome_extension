@@ -60,6 +60,7 @@ const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
     //  checking all ready scrap or not
     chrome.storage.local.get(["profiles"], (result) => {
       if (result.profiles) {
+        console.log("result", result.profiles, userInfo);
         const test = result.profiles.some(
           (item) => item.personalInfo.ProfileLink === userInfo?.profileUrl
         );
@@ -68,73 +69,10 @@ const PopupUI: React.FC<PopupUIProps> = ({ setProfile }) => {
     });
   }
 
+  // console.log("userinfo", userInfo);
+
   const [error, setError] = useState(null);
   const [isScraping, setIsScraping] = useState(false);
-
-  // const startScraping = async () => {
-  //   setIsScraping(true);
-  //   setError(null);
-
-  //   const [tab] = await chrome.tabs.query({
-  //     active: true,
-  //     currentWindow: true,
-  //   });
-
-  //   const url = new URL(tab.url);
-
-  //   if (
-  //     url.hostname === "www.linkedin.com" &&
-  //     url.pathname.includes("/company/")
-  //   ) {
-  //     const newUrl = tab.url.replace("/mycompany/", "/about/");
-
-  //     chrome.tabs.update(tab.id, { url: newUrl }, () => {
-  //       chrome.scripting.executeScript(
-  //         {
-  //           target: { tabId: tab.id },
-  //           func: () => {
-  //             chrome.runtime.sendMessage({
-  //               action: "startScraping",
-  //               origin: "linkedin",
-  //             });
-  //           },
-  //         },
-  //         (injectionResults) => {
-  //           if (chrome.runtime.lastError || injectionResults.length === 0) {
-  //             setError("Failed to start scraping. Please try again.");
-  //             setIsScraping(false);
-  //           }
-  //         }
-  //       );
-  //     });
-
-  //     return;
-  //   }
-
-  //   const matchedLink = ["linkedin", "twitter", "upwork"].find((link) =>
-  //     userInfo.profileUrl.includes(link)
-  //   );
-
-  //   chrome.runtime.sendMessage(
-  //     {
-  //       action: "startScraping",
-  //       origin: matchedLink,
-  //     },
-  //     (response) => {
-  //       if (chrome.runtime.lastError || !response) {
-  //         setError("Failed to start scraping. Please try again.");
-  //         setIsScraping(false);
-  //         return;
-  //       }
-  //       if (response.error) {
-  //         setError(response.error);
-  //         setIsScraping(false);
-  //       } else {
-  //         console.log("All okay");
-  //       }
-  //     }
-  //   );
-  // };
 
   const startScraping = () => {
     setIsScraping(true);
